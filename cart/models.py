@@ -6,7 +6,8 @@ from products.models import ProductModel
 
 class CartModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        UserModel, on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -16,9 +17,11 @@ class CartModel(models.Model):
 
 class CartItemModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    product = models.ForeignKey(ProductModel, on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        ProductModel, on_delete=models.CASCADE, related_name='items')
     quantity = models.IntegerField()
-    cart = models.ForeignKey(CartModel, on_delete=models.CASCADE)
+    cart = models.ForeignKey(
+        CartModel, on_delete=models.CASCADE, related_name='items')
 
     class Meta:
         verbose_name = "Товар корзины"
