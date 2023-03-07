@@ -22,8 +22,6 @@ class ProductModel(models.Model):
     description = models.TextField(max_length=256)
     price = models.DecimalField(max_digits=6, decimal_places=2)
     general_quantity = models.IntegerField()
-    # image = models.ForeignKey(
-    #     PictureModel, on_delete=models.CASCADE, related_name='images')
 
     def __str__(self):
         return self.title
@@ -35,7 +33,8 @@ class ProductModel(models.Model):
 
 class PictureModel(models.Model):
     picture = models.ImageField(upload_to='products_images')
-    product = models.ForeignKey(ProductModel, on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        ProductModel, on_delete=models.CASCADE, related_name='images')
 
     def __str__(self):
         return self.picture.url
