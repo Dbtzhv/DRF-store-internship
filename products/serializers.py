@@ -12,7 +12,7 @@ class PictureSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    images = PictureSerializer(many=True)
+    images = PictureSerializer(many=True, required=True)
     # category = serializers.SlugRelatedField(slug_field='name', read_only=True)
 
     class Meta:
