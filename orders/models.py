@@ -10,8 +10,10 @@ class OrderModel(models.Model):
         to=UserModel, related_name='orders', verbose_name='user email', on_delete=models.CASCADE)
     created_at = models.DateTimeField(
         'Дата создания', auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField('Дата изменения', auto_now=True)
-    order_sum = models.DecimalField(max_digits=6, decimal_places=2)
+    updated_at = models.DateTimeField(
+        'Дата изменения', auto_now=True)
+    order_sum = models.DecimalField(
+        max_digits=6, decimal_places=2, verbose_name='Сумма заказа')
 
     def __str__(self):
         return f'{self.id}'
@@ -26,7 +28,7 @@ class OrderProductsModel(models.Model):
         to=OrderModel, related_name='products', on_delete=models.CASCADE)
     product_id = models.ForeignKey(
         to=ProductModel, related_name='order', verbose_name='product title', on_delete=models.CASCADE)
-    quantity = models.IntegerField()
+    quantity = models.IntegerField(verbose_name='Количество')
 
     def __str__(self):
         return f'order:{self.order_id}; product:{self.product_id}'

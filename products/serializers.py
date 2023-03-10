@@ -1,7 +1,19 @@
 from rest_framework import serializers
-from .models import ProductModel, PictureModel
+from .models import ProductModel, PictureModel, ProductCategoryModel, ParameterModel
 from drf_extra_fields.fields import Base64ImageField
 from drf_writable_nested import WritableNestedModelSerializer
+
+
+class ParameterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ParameterModel
+        exclude = ('product',)
+
+
+class ProductCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductCategoryModel
+        fields = '__all__'
 
 
 class PictureSerializer(serializers.ModelSerializer):
@@ -14,12 +26,13 @@ class PictureSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(WritableNestedModelSerializer, serializers.ModelSerializer):
     images = PictureSerializer(many=True, required=True)
-    # category = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    parameters = ParameterSerializer(many=True)
+    # category = serializers.SlugRelatedField(slug_field='name', queryset=ProductCategoryModel.objects.all())
 
     class Meta:
         model = ProductModel
         fields = ['id', 'title', 'category', 'description',
-                  'price', 'general_quantity', 'images', 'characteristics']
+                  'price', 'general_quantity', 'parameters', 'images']
 
     # def create(self, validated_data):
     #     choice_validated_data = validated_data.pop('images')

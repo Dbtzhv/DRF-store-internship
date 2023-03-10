@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ProductModel, PictureModel, ProductCategoryModel
+from .models import ProductModel, PictureModel, ProductCategoryModel, ParameterModel, ParameterModel
 from django.utils.html import mark_safe
 
 
@@ -12,10 +12,15 @@ class PictureInline(admin.StackedInline):
     model = PictureModel
 
 
+class ParameterInline(admin.StackedInline):
+    extra = 0
+    model = ParameterModel
+
+
 @admin.register(ProductModel)
 class ProductAdmin(admin.ModelAdmin):
 
-    inlines = [PictureInline,]
+    inlines = [PictureInline, ParameterInline]
     list_display = ('id', 'title')
     search_fields = ('id', 'title')
 
@@ -24,3 +29,9 @@ class ProductAdmin(admin.ModelAdmin):
 class ProductCategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     search_fields = ('id', 'name')
+
+
+# @admin.register(ParameterModel)
+# class ParameterAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'name', 'value')
+#     search_fields = ('id', 'name', 'value')
