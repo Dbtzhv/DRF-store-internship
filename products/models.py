@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from autoslug.fields import AutoSlugField
-from django.utils.text import slugify
+from slugify import slugify
 
 
 def set_slugify(value) -> str:
@@ -13,7 +13,8 @@ class ProductCategoryModel(models.Model):
     name = models.CharField(max_length=128, verbose_name='Категория')
     description = models.TextField(
         null=True, blank=True, verbose_name='Описание')
-    slug = AutoSlugField(populate_from='name', slugify=set_slugify)
+    slug = AutoSlugField(populate_from='name',
+                         slugify=set_slugify)
 
     def __str__(self):
         return self.name
