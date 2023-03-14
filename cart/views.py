@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework import generics, viewsets
 from .models import CartItemModel, CartModel
 from .serializers import CartItemSerializer, CartSerializer
@@ -17,5 +17,6 @@ class CartAPIView(viewsets.ModelViewSet):
 
 
 class CartItemAPIView(viewsets.ModelViewSet):
+
     queryset = CartModel.objects.all()
     serializer_class = CartItemSerializer

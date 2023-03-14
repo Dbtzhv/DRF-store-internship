@@ -9,6 +9,14 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_item_price(self, obj):
         return obj.product.price
 
+    def validate(self, data):
+        """
+        Check that quantity is not greater than general_quantity
+        """
+        if data['quantity'] > data['product'].general_quantity:
+            data['status'] = 'n'
+        return data
+
     class Meta:
         model = CartItemModel
         exclude = ('cart',)
