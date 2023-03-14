@@ -8,6 +8,10 @@ from .serializers import CartItemSerializer, CartSerializer
 
 
 class CartAPIView(viewsets.ModelViewSet):
+    def perform_create(self, serializer):
+        serializer.validated_data['user'] = self.request.user
+        serializer.save()
+
     queryset = CartModel.objects.all()
     serializer_class = CartSerializer
 
