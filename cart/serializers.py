@@ -4,7 +4,7 @@ from drf_writable_nested import WritableNestedModelSerializer
 
 
 class CartItemSerializer(serializers.ModelSerializer):
-    singe_item_price = serializers.SerializerMethodField('get_item_price')
+    single_item_price = serializers.SerializerMethodField('get_item_price')
 
     def get_item_price(self, obj):
         return obj.product.price
