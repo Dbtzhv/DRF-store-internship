@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from users.models import UserModel
 from products.models import ProductModel
+from orders.models import OrderProductsModel, OrderModel
 
 
 class CartModel(models.Model):
@@ -24,6 +25,27 @@ class CartModel(models.Model):
         verbose_name = "Корзина"
         verbose_name_plural = "Корзина"
         ordering = ('-created_at',)
+
+    def place_order(self):
+        order = OrderModel.objects.create(
+            user=self.user,
+        )
+
+        for item in self.items.all():
+            OrderProductsModel.objects.create(
+                order=order,
+                product=item.product,
+                quantity=item.quantity,
+            )
+
+        for item in self.items.all():
+            item.product.general_quantity -= item.quantity
+            item.product.save()
+            if item.product.general_quantity <= 0:
+                item.delete()
+
+        self.status = 'o'
+        self.save()
 
 
 class CartItemModel(models.Model):

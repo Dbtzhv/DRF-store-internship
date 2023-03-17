@@ -10,5 +10,5 @@ class OrderProductInline(admin.StackedInline):
 @admin.register(OrderModel)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderProductInline]
-    list_display = ('id', 'user_id', 'created_at', 'updated_at', 'order_sum')
-    search_fields = ('user_id__email',)
+    # list_display = ('id', 'user_id', 'created_at', 'updated_at', 'order_sum')
+    # search_fields = ('user_id__email',)
