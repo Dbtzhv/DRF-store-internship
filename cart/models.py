@@ -3,6 +3,7 @@ from django.db import models
 from users.models import UserModel
 from products.models import ProductModel
 from orders.models import OrderProductsModel, OrderModel
+from cart.services import CartError
 
 
 class CartModel(models.Model):
@@ -27,25 +28,29 @@ class CartModel(models.Model):
         ordering = ('-created_at',)
 
     def place_order(self):
-        order = OrderModel.objects.create(
-            user=self.user,
-        )
-
-        for item in self.items.all():
-            OrderProductsModel.objects.create(
-                order=order,
-                product=item.product,
-                quantity=item.quantity,
+        if 'n' not in [item.status for item in self.items.all()]:
+            order = OrderModel.objects.create(
+                user=self.user,
+                total_price=sum(
+                    [i.quantity*i.product.price for i in self.items.all()])
             )
 
-        for item in self.items.all():
-            item.product.general_quantity -= item.quantity
-            item.product.save()
-            if item.product.general_quantity <= 0:
-                item.delete()
+            for item in self.items.all():
+                OrderProductsModel.objects.create(
+                    order=order,
+                    product=item.product,
+                    quantity=item.quantity,
+                )
 
-        self.status = 'o'
-        self.save()
+            for item in self.items.all():
+                item.product.general_quantity -= item.quantity
+                item.product.save()
+
+            self.status = 'o'
+            self.save()
+
+        else:
+            raise CartError('Корзина содержит товары со статусом "недоступен"')
 
 
 class CartItemModel(models.Model):
