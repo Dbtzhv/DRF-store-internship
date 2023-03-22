@@ -14,7 +14,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         Check that quantity is not greater than general_quantity
         """
         if data['quantity'] > data['product'].general_quantity:
-            data['status'] = 'n'
+            data['status'] = 'not available'
         return data
 
     class Meta:

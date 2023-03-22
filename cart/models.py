@@ -9,13 +9,13 @@ from cart.services import CartError
 class CartModel(models.Model):
 
     CART_STATUS = (
-        ('n', 'Новая'),
-        ('o', 'Заказана'),
-        ('d', 'Удалена'),
+        ('new', 'Новая'),
+        ('ordered', 'Заказана'),
+        ('deleted', 'Удалена'),
     )
 
     status = models.CharField(
-        max_length=1, choices=CART_STATUS, blank=True, default='n')
+        max_length=7, choices=CART_STATUS, blank=True, default='new')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         UserModel, on_delete=models.CASCADE, related_name='cart', verbose_name='Принадлежит')
@@ -28,25 +28,25 @@ class CartModel(models.Model):
         ordering = ('-created_at',)
 
     def place_order(self):
-        if 'n' not in [item.status for item in self.items.all()]:
+        if not CartItemModel.objects.filter(status='not available'):
             order = OrderModel.objects.create(
                 user=self.user,
                 total_price=sum(
-                    [i.quantity*i.product.price for i in self.items.all()])
+                    [i.quantity*i.product.price for i in CartItemModel.objects.filter(cart=self.id)])
             )
 
-            for item in self.items.all():
+            for item in CartItemModel.objects.filter(cart=self.id):
                 OrderProductsModel.objects.create(
                     order=order,
                     product=item.product,
                     quantity=item.quantity,
+                    product_price=item.product.price
                 )
 
-            for item in self.items.all():
                 item.product.general_quantity -= item.quantity
                 item.product.save()
 
-            self.status = 'o'
+            self.status = 'ordered'
             self.save()
 
         else:
@@ -56,13 +56,13 @@ class CartModel(models.Model):
 class CartItemModel(models.Model):
 
     CARTITEM_STATUS = (
-        ('a', 'Доступен'),
-        ('n', 'Недоступен'),
-        ('d', 'Удалён'),
+        ('available', 'Доступен'),
+        ('not available', 'Недоступен'),
+        ('deleted', 'Удалён'),
     )
 
     status = models.CharField(
-        max_length=1, choices=CARTITEM_STATUS, blank=True, default='a')
+        max_length=13, choices=CARTITEM_STATUS, blank=True, default='available')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     product = models.ForeignKey(
         ProductModel, on_delete=models.CASCADE, related_name='items', verbose_name="Продукт")

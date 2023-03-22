@@ -7,14 +7,15 @@ from products.models import ProductModel
 class OrderModel(models.Model):
 
     ORDER_STATUS = (
-        ('n', 'Новый'),
-        ('p', 'Оплачен'),
-        ('s', 'Отправлен'),
-        ('c', 'Завершен'),
+        ('new', 'Новый'),
+        ('paid', 'Оплачен'),
+        ('sent', 'Отправлен'),
+        ('completed', 'Завершен'),
+        ('canceled', 'Отменён')
     )
 
     status = models.CharField(
-        max_length=1, choices=ORDER_STATUS, blank=True, default='n')
+        max_length=9, choices=ORDER_STATUS, blank=True, default='new')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         UserModel, on_delete=models.CASCADE, related_name='orders', verbose_name='Принадлежит')
@@ -39,6 +40,8 @@ class OrderProductsModel(models.Model):
     quantity = models.IntegerField(verbose_name="Количество")
     order = models.ForeignKey(
         OrderModel, on_delete=models.CASCADE, related_name='items', verbose_name="Заказ")
+    product_price = models.DecimalField(
+        max_digits=6, decimal_places=2, verbose_name='Цена')
 
     class Meta:
         verbose_name = "Товар заказа"
