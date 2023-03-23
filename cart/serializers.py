@@ -26,6 +26,14 @@ class CartSerializer(WritableNestedModelSerializer, serializers.ModelSerializer)
     items = CartItemSerializer(many=True, required=True)
     total_sum = serializers.SerializerMethodField('get_field_name')
 
+    def validate(self, data):
+        """
+        Check that quantity is not greater than general_quantity
+        """
+        if 'not available' in [i['status'] for i in data['items']]:
+            data['status'] = 'not available'
+        return data
+
     def get_field_name(self, obj):
         return sum([i.quantity*i.product.price for i in obj.items.all()])
 

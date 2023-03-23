@@ -4,18 +4,20 @@ from users.models import UserModel
 from products.models import ProductModel
 from orders.models import OrderProductsModel, OrderModel
 from cart.services import CartError
+from .services import make_order
 
 
 class CartModel(models.Model):
 
     CART_STATUS = (
         ('new', 'Новая'),
+        ('not available', 'Недоступна'),
         ('ordered', 'Заказана'),
         ('deleted', 'Удалена'),
     )
 
     status = models.CharField(
-        max_length=7, choices=CART_STATUS, blank=True, default='new')
+        max_length=13, choices=CART_STATUS, blank=True, default='new')
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         UserModel, on_delete=models.CASCADE, related_name='cart', verbose_name='Принадлежит')
@@ -28,29 +30,30 @@ class CartModel(models.Model):
         ordering = ('-created_at',)
 
     def place_order(self):
-        if not CartItemModel.objects.filter(status='not available'):
-            order = OrderModel.objects.create(
-                user=self.user,
-                total_price=sum(
-                    [i.quantity*i.product.price for i in CartItemModel.objects.filter(cart=self.id)])
-            )
+        make_order(self)
+        # if self.status != 'not available':
+        #     order = OrderModel.objects.create(
+        #         user=self.user,
+        #         total_price=sum(
+        #             [i.quantity*i.product.price for i in CartItemModel.objects.filter(cart=self.id)])
+        #     )
 
-            for item in CartItemModel.objects.filter(cart=self.id):
-                OrderProductsModel.objects.create(
-                    order=order,
-                    product=item.product,
-                    quantity=item.quantity,
-                    product_price=item.product.price
-                )
+        #     for item in CartItemModel.objects.filter(cart=self.id):
+        #         OrderProductsModel.objects.create(
+        #             order=order,
+        #             product=item.product,
+        #             quantity=item.quantity,
+        #             product_price=item.product.price
+        #         )
 
-                item.product.general_quantity -= item.quantity
-                item.product.save()
+        #         item.product.general_quantity -= item.quantity
+        #         item.product.save()
 
-            self.status = 'ordered'
-            self.save()
+        #     self.status = 'ordered'
+        #     self.save()
 
-        else:
-            raise CartError('Корзина содержит товары со статусом "недоступен"')
+        # else:
+        #     raise CartError("Корзина содержит товары со статусом 'недоступен'")
 
 
 class CartItemModel(models.Model):
