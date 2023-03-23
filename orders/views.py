@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import generics, viewsets
-from cart.services import CartError
+from .services import CartError
 from .models import OrderModel, OrderProductsModel
 from .serializers import OrderSerializer, OrderProductsSerializer
 from rest_framework import status

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from cart.services import CartError
+
 from cart.models import CartModel
 from .models import OrderModel, OrderProductsModel
 from drf_writable_nested import WritableNestedModelSerializer

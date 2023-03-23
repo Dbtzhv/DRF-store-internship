@@ -3,8 +3,7 @@ from django.db import models
 from users.models import UserModel
 from products.models import ProductModel
 from orders.models import OrderProductsModel, OrderModel
-from cart.services import CartError
-from .services import make_order
+from orders.services import make_order
 
 
 class CartModel(models.Model):
@@ -31,29 +30,6 @@ class CartModel(models.Model):
 
     def place_order(self):
         make_order(self)
-        # if self.status != 'not available':
-        #     order = OrderModel.objects.create(
-        #         user=self.user,
-        #         total_price=sum(
-        #             [i.quantity*i.product.price for i in CartItemModel.objects.filter(cart=self.id)])
-        #     )
-
-        #     for item in CartItemModel.objects.filter(cart=self.id):
-        #         OrderProductsModel.objects.create(
-        #             order=order,
-        #             product=item.product,
-        #             quantity=item.quantity,
-        #             product_price=item.product.price
-        #         )
-
-        #         item.product.general_quantity -= item.quantity
-        #         item.product.save()
-
-        #     self.status = 'ordered'
-        #     self.save()
-
-        # else:
-        #     raise CartError("Корзина содержит товары со статусом 'недоступен'")
 
 
 class CartItemModel(models.Model):
