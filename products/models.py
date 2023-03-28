@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from autoslug.fields import AutoSlugField
 from slugify import slugify
+from users.models import UserModel
 
 
 def set_slugify(value) -> str:
@@ -11,6 +12,8 @@ def set_slugify(value) -> str:
 class ProductCategoryModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=128, verbose_name='Категория')
+    user = models.ForeignKey(
+        UserModel, on_delete=models.CASCADE, related_name='productcategories', verbose_name='Добавлен')
     description = models.TextField(
         null=True, blank=True, verbose_name='Описание')
     slug = AutoSlugField(populate_from='name',
@@ -27,6 +30,8 @@ class ProductCategoryModel(models.Model):
 class ProductModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=82, verbose_name='Товар')
+    user = models.ForeignKey(
+        UserModel, on_delete=models.CASCADE, related_name='products', verbose_name='Добавлен')
     category = models.ForeignKey(
         ProductCategoryModel, on_delete=models.CASCADE, verbose_name='Категория', related_name='products')
     description = models.TextField(max_length=256, verbose_name='Описание')
@@ -45,7 +50,7 @@ class ProductModel(models.Model):
 class PictureModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     picture = models.ImageField(
-        upload_to='products_images', verbose_name='Изображение')
+        upload_to='', verbose_name='Изображение')
     product = models.ForeignKey(
         ProductModel, on_delete=models.CASCADE, verbose_name='Продукт', related_name='images')
 

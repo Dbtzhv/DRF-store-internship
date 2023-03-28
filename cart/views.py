@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, render
 from rest_framework import generics, viewsets
 from .models import CartItemModel, CartModel
 from .serializers import CartItemSerializer, CartSerializer
+from utils.exceptions import CartError
 
 
 # Create your views here.
@@ -22,5 +23,5 @@ class CartAPIView(viewsets.ModelViewSet):
 
 class CartItemAPIView(viewsets.ModelViewSet):
 
-    queryset = CartModel.objects.all()
+    queryset = CartItemModel.objects.all()
     serializer_class = CartItemSerializer

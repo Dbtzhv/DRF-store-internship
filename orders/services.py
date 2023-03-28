@@ -1,18 +1,19 @@
 from orders.models import OrderModel
 from orders.models import OrderProductsModel
-
-
-class CartError(Exception):
-    pass
+from utils.exceptions import CartError
+from django.db.models import Sum, F
 
 
 def make_order(cart):
     from cart.models import CartItemModel
+
+    total_price = CartItemModel.objects.filter(cart=cart).aggregate(
+        total_price=Sum(F('quantity') * F('product__price')))['total_price'] or 0
+
     if cart.status != 'not available':
         order = OrderModel.objects.create(
             user=cart.user,
-            total_price=sum(
-                [i.quantity*i.product.price for i in CartItemModel.objects.filter(cart=cart.id)])
+            total_price=total_price
         )
 
         for item in CartItemModel.objects.filter(cart=cart.id):

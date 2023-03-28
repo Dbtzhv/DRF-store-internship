@@ -6,7 +6,8 @@ from .views import PaymentTransactionAPIView
 app_name = 'transactions'
 
 transactions_router = routers.SimpleRouter()
-transactions_router.register('transactions', PaymentTransactionAPIView)
+transactions_router.register(
+    'transactions', PaymentTransactionAPIView, basename='paymenttransaction')
 
 urlpatterns = [
     path('', include(transactions_router.urls)),

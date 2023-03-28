@@ -9,7 +9,8 @@ products_router = routers.SimpleRouter()
 products_router.register('products', ProductAPIView)
 
 productcategories_router = routers.SimpleRouter()
-productcategories_router.register('categories', ProductCategoryAPIView)
+productcategories_router.register(
+    'categories', ProductCategoryAPIView, basename='productcategory')
 
 urlpatterns = [
     path('', include(products_router.urls)),

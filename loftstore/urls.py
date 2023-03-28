@@ -27,7 +27,7 @@ urlpatterns = [
     path('', include('products.urls')),
     path('', include('orders.urls')),
     path('', include('cart.urls')),
-    path('', include('transactions.urls')),
+    path('', include('transactions.urls'), name='transactions'),
     # ^ YOUR PATTERNS
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # Optional UI:
@@ -43,3 +43,5 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
                           document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL,
+                          document_root=settings.STATIC_ROOT)
