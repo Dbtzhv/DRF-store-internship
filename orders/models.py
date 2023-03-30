@@ -24,7 +24,7 @@ class OrderModel(models.Model):
     updated_at = models.DateTimeField(
         auto_now=True, verbose_name="Дата обновления")
     total_price = models.DecimalField(
-        max_digits=7, decimal_places=2, verbose_name='К оплате')
+        max_digits=10, decimal_places=2, verbose_name='К оплате')
 
     class Meta:
         verbose_name = "Заказ"

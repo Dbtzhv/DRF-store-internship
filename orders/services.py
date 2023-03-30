@@ -7,8 +7,8 @@ from django.db.models import Sum, F
 def make_order(cart):
     from cart.models import CartItemModel
 
-    total_price = CartItemModel.objects.filter(cart=cart).aggregate(
-        total_price=Sum(F('quantity') * F('product__price')))['total_price'] or 0
+    total_price = float(CartItemModel.objects.filter(cart=cart).aggregate(
+        total_price=Sum(F('quantity') * F('product__price')))['total_price'] or 0)
 
     if cart.status != 'not available':
         order = OrderModel.objects.create(

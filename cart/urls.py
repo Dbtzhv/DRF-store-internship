@@ -6,7 +6,7 @@ from .views import CartAPIView, CartItemAPIView
 app_name = 'cart'
 
 cart_router = routers.SimpleRouter()
-cart_router.register('cart', CartAPIView)
+cart_router.register('cart', CartAPIView, basename="carts")
 
 
 urlpatterns = [
