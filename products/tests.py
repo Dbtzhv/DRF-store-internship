@@ -1,75 +1,112 @@
-# import pytest
-# from django.urls import reverse
-# from rest_framework import status
-# from rest_framework.test import APIClient
-# from mixer.backend.django import mixer
-# from products.models import ProductCategoryModel
-# from users.models import UserModel
-# from rest_framework_simplejwt.tokens import AccessToken
+import json
+import requests
+from django.urls import reverse
+from products.models import ProductCategoryModel
+from products.models import ProductModel, ProductCategoryModel
+import pytest
+from mixer.backend.django import mixer
+from products.models import ProductCategoryModel
+from users.models import UserModel
+from rest_framework.test import APIClient
+import base64
 
 
-# @pytest.fixture
-# def api_client():
-#     return APIClient()
+# categories
+
+@pytest.fixture
+def base64_image():
+    with open(r'utils\Plato.jpg', 'rb') as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        return encoded_string
 
 
-# @pytest.fixture
-# def user():
-#     email = 'superuser@example.com'
-#     password = 'testpass123'
-#     return UserModel.objects.create_superuser(
-#         email=email,
-#         password=password,
-#     )
+@pytest.fixture
+def api_client():
+    return APIClient()
 
 
-# @pytest.fixture
-# def product_category():
-#     return mixer.blend(ProductCategoryModel)
+@pytest.fixture
+def product_category():
+    return mixer.blend(ProductCategoryModel)
 
 
-# @pytest.fixture
-# def token(user):
-#     access_token = AccessToken.for_user(user)
-#     return f'Bearer {access_token}'
+@pytest.fixture
+def product():
+    return mixer.blend(ProductModel)
 
 
-# @pytest.mark.django_db
-# def test_create_product_category(api_client, user, token):
-#     headers = {'Authorization': token}
-
-#     data = {
-#         'name': 'Test category',
-#         'description': 'Test description'
-#     }
-
-#     print('Token:', token)
-#     print('Headers:', headers)
-#     response = api_client.post(
-#         reverse('products:productcategory-list'), data=data, headers=headers)
-
-#     assert response.status_code == status.HTTP_201_CREATED
-#     assert ProductCategoryModel.objects.filter(name=data['name']).exists()
+@pytest.fixture
+def user():
+    email = 'test@example.com'
+    password = 'testpassword'
+    return UserModel.objects.create_superuser(
+        email=email,
+        password=password,
+    )
 
 
-# def test_delete_product_category(api_client, user, product_category):
-#     api_client.force_authenticate(user=user)
+@pytest.mark.django_db
+def test_product_category_creation(user, api_client):
+    payload = {"name": "new_name",
+               "description": "new_description",
+               "user": str(user.id)}
+    api_client.force_authenticate(user=user)
+    response = api_client.post(
+        reverse('products:productcategory-list'), data=payload)
+    assert response.status_code == 201
 
-#     response = api_client.delete(reverse('products:productcategory-detail', args=[product_category.id]))
 
-#     assert response.status_code == status.HTTP_204_NO_CONTENT
-#     assert not ProductCategoryModel.objects.filter(id=product_category.id).exists()
+@pytest.mark.django_db
+def test_product_category_update(user, product_category, api_client):
+    payload = {"name": "new_name",
+               "description": "new_description",
+               "user": str(user.id)}
+    api_client.force_authenticate(user=user)
+    response = api_client.put(reverse(
+        'products:productcategory-detail', kwargs={'pk': product_category.id}), data=payload)
+    data = response.data
+    assert data["name"] == payload["name"]
 
 
-# def test_create_product_category_with_invalid_data(api_client, user):
-#     api_client.force_authenticate(user=user)
+@pytest.mark.django_db
+def test_product_category_access(user, api_client, product_category):
+    api_client.force_authenticate(user=user)
+    response = api_client.get(
+        f'/categories/{product_category.id}/')
+    assert response.status_code == 200, 'Failed to access product category details'
 
-#     data = {
-#         'name': '',
-#         'description': 'Test description'
-#     }
 
-#     response = api_client.post(reverse('products:productcategory-list'), data=data)
+# products
 
-#     assert response.status_code == status.HTTP_400_BAD_REQUEST
-#     assert not ProductCategoryModel.objects.filter(description=data['description']).exists()
+@pytest.mark.django_db
+def test_product_creation(user, api_client, product_category, base64_image):
+    payload = {"title": "title",
+               "category": str(product_category.id),
+               "description": "description",
+               "price": "50.00",
+               "general_quantity": 5,
+               "parameters": [{"name": "Рост", "value": "15kg"}],
+               "images": [{"picture": base64_image}]
+               }
+    api_client.force_authenticate(user=user)
+    response = api_client.post(
+        reverse('products:product-list'), data=payload, format='json')
+    print(response.data)
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_product_update(user, api_client, product_category, base64_image, product):
+    payload = {"title": "new_title",
+               "category": str(product_category.id),
+               "description": "new_description",
+               "price": "100.00",
+               "general_quantity": 10,
+               "parameters": [{"name": "Вес", "value": "10kg"}],
+               "images": [{"picture": base64_image}]
+               }
+    api_client.force_authenticate(user=user)
+    response = api_client.put(
+        reverse('products:product-detail', kwargs={'pk': product.id}), data=payload, format='json')
+    print(response.data, '++++++34647')
+    assert response.status_code in (200, 201)

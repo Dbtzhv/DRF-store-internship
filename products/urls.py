@@ -6,7 +6,7 @@ from products.views import ProductAPIView, ProductCategoryAPIView
 app_name = 'products'
 
 products_router = routers.SimpleRouter()
-products_router.register('products', ProductAPIView)
+products_router.register('products', ProductAPIView, basename='product')
 
 productcategories_router = routers.SimpleRouter()
 productcategories_router.register(
