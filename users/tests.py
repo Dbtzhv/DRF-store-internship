@@ -46,28 +46,22 @@ def test_create_superuser():
 
 
 @pytest.mark.django_db
-def test_register_serializer_valid_data():
-    """Test creating a user with valid data using the RegisterSerializer"""
-    data = {
-        'email': 'test@example.com',
-        'password': 'testpass123',
-        'password2': 'testpass123',
-    }
+@pytest.mark.parametrize('data, expected_result', [
+    ({'email': 'test@example.com', 'password': 'testpass123',
+     'password2': 'testpass123'}, True),
+    ({'email': 'test@example.com', 'password': 'testpass123',
+     'password2': 'wrongpass'}, False),
+    ({'email': 'invalid_email', 'password': 'testpass123',
+     'password2': 'testpass123'}, False),
+    ({'email': 'invalid_email', 'password': 'testpass123',
+     'password2': 'wrongpass'}, False),
+])
+def test_register_serializer(data, expected_result):
+    """Test creating a user using the RegisterSerializer"""
     serializer = RegisterSerializer(data=data)
-    assert serializer.is_valid() is True
-
-
-@pytest.mark.django_db
-def test_register_serializer_invalid_data():
-    """Test creating a user with invalid data using the RegisterSerializer"""
-    data = {
-        'email': 'test@example.com',
-        'password': 'testpass123',
-        'password2': 'wrongpass',
-    }
-    serializer = RegisterSerializer(data=data)
-    assert serializer.is_valid() is False
-    assert 'password' in serializer.errors
+    assert serializer.is_valid() == expected_result
+    if not expected_result:
+        assert serializer.errors
 
 
 @pytest.mark.django_db

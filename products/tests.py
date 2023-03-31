@@ -9,6 +9,8 @@ from products.models import ProductCategoryModel
 from users.models import UserModel
 from rest_framework.test import APIClient
 import base64
+from rest_framework import status
+from products.serializers import ProductCategorySerializer
 
 
 # categories
@@ -46,26 +48,71 @@ def user():
 
 
 @pytest.mark.django_db
-def test_product_category_creation(user, api_client):
-    payload = {"name": "new_name",
-               "description": "new_description",
-               "user": str(user.id)}
-    api_client.force_authenticate(user=user)
-    response = api_client.post(
-        reverse('products:productcategory-list'), data=payload)
-    assert response.status_code == 201
+@pytest.mark.parametrize('data, expected_result', [
+    (
+        {
+            'name': 'Картины',
+            'description': 'Домашние картины',
+            'user': None
+        },
+        True,
+    ),
+    (
+        {
+            'name': 'Картины',
+            'user': 'invalid'
+        },
+        False,
+    ),
+])
+def test_create_payment_transaction(data, expected_result, user):
+    data['user'] = user.id if data['user'] != 'invalid' else 'invalid'
+    serializer = ProductCategorySerializer(data=data)
+    assert serializer.is_valid() == expected_result
+    if not expected_result:
+        assert serializer.errors
 
 
 @pytest.mark.django_db
-def test_product_category_update(user, product_category, api_client):
-    payload = {"name": "new_name",
-               "description": "new_description",
-               "user": str(user.id)}
+@pytest.mark.parametrize(
+    'data, expected_status', [
+        ({'name': 'name', 'description': 'description',
+         'user': 'invalid'}, status.HTTP_400_BAD_REQUEST),
+        ({'name': 'name', 'description': 'description',
+         'user': None}, status.HTTP_201_CREATED),
+        ({'name': 'name', 'description': 'description',
+         'user': None}, status.HTTP_201_CREATED),
+    ]
+)
+def test_product_category_creation(user, api_client, data, expected_status):
+    data['user'] = user.id if data['user'] == None else 'invalid'
+    api_client.force_authenticate(user=user)
+    response = api_client.post(
+        reverse('products:productcategory-list'), data=data, format='json')
+    assert response.status_code == expected_status
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    'data, expected_status', [
+        ({'name': 'name', 'description': 'description',
+         'user': 'invalid'}, status.HTTP_400_BAD_REQUEST),
+        ({'name': 'name', 'description': 'new_description',
+         'user': None}, status.HTTP_200_OK),
+        ({'name': 'new_name', 'description': 'description',
+         'user': None}, status.HTTP_200_OK),
+    ]
+)
+def test_product_category_update(user, product_category, api_client,  data, expected_status):
+    data['user'] = user.id if data['user'] == None else 'invalid'
     api_client.force_authenticate(user=user)
     response = api_client.put(reverse(
-        'products:productcategory-detail', kwargs={'pk': product_category.id}), data=payload)
-    data = response.data
-    assert data["name"] == payload["name"]
+        'products:productcategory-detail', kwargs={'pk': product_category.id}), data=data)
+    r_data = response.data
+    if expected_status != status.HTTP_400_BAD_REQUEST:
+        assert r_data["name"] == data["name"]
+        assert r_data["description"] == data["description"]
+    assert response.status_code == expected_status
 
 
 @pytest.mark.django_db
@@ -79,34 +126,35 @@ def test_product_category_access(user, api_client, product_category):
 # products
 
 @pytest.mark.django_db
-def test_product_creation(user, api_client, product_category, base64_image):
-    payload = {"title": "title",
-               "category": str(product_category.id),
-               "description": "description",
-               "price": "50.00",
-               "general_quantity": 5,
-               "parameters": [{"name": "Рост", "value": "15kg"}],
-               "images": [{"picture": base64_image}]
-               }
+@pytest.mark.parametrize(
+    'payload, expected_status', [
+        ({"title": "title",
+          "category": None,
+          "description": "description",
+          "price": "50.00",
+          "general_quantity": 5,
+          "parameters": [{"name": "Рост", "value": "15kg"}],
+          "images": [{"picture": base64_image}]
+          }, 201),
+        ({"title": "new_title",
+          "category": None,
+          "description": "new_description",
+          "price": "100.00",
+          "general_quantity": 10,
+          "parameters": [{"name": "Вес", "value": "10kg"}],
+          "images": [{"picture": base64_image}]
+          }, 200)
+    ]
+)
+def test_product_creation_and_update(user, api_client, product, payload, expected_status, base64_image, product_category):
+    payload['images'][0]["picture"] = base64_image
+    payload['category'] = str(product_category.id)
+    if expected_status == 200:
+        url = reverse('products:product-detail', kwargs={'pk': product.id})
+        method = api_client.put
+    else:
+        url = reverse('products:product-list')
+        method = api_client.post
     api_client.force_authenticate(user=user)
-    response = api_client.post(
-        reverse('products:product-list'), data=payload, format='json')
-    print(response.data)
-    assert response.status_code == 201
-
-
-@pytest.mark.django_db
-def test_product_update(user, api_client, product_category, base64_image, product):
-    payload = {"title": "new_title",
-               "category": str(product_category.id),
-               "description": "new_description",
-               "price": "100.00",
-               "general_quantity": 10,
-               "parameters": [{"name": "Вес", "value": "10kg"}],
-               "images": [{"picture": base64_image}]
-               }
-    api_client.force_authenticate(user=user)
-    response = api_client.put(
-        reverse('products:product-detail', kwargs={'pk': product.id}), data=payload, format='json')
-    print(response.data, '++++++34647')
-    assert response.status_code in (200, 201)
+    response = method(url, data=payload, format='json')
+    assert response.status_code == expected_status
