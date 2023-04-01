@@ -1,6 +1,10 @@
+from decimal import Decimal
 import json
 import requests
 from django.urls import reverse
+from products.serializers import ProductSerializer
+from products.models import PictureModel
+from products.models import ParameterModel
 from products.models import ProductCategoryModel
 from products.models import ProductModel, ProductCategoryModel
 import pytest
@@ -124,6 +128,63 @@ def test_product_category_access(user, api_client, product_category):
 
 
 # products
+
+
+@pytest.fixture
+def parameter(product):
+    return mixer.blend(ParameterModel, product=product)
+
+
+@pytest.fixture
+def picture(product):
+    return mixer.blend(PictureModel, product=product)
+
+
+@pytest.fixture
+def data(product_category, parameter, base64_image, user):
+    return {
+        'title': 'Test Product',
+        'category': str(product_category.id),
+        'description': 'Test description',
+        'price': Decimal('19.99'),
+        'general_quantity': 10,
+        'parameters': [
+            {
+                'name': parameter.name,
+                'value': parameter.value,
+            }
+        ],
+        'images': [
+            {
+                'picture': base64_image,
+            }
+        ]
+    }
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('data', [
+    {},
+    {'title': 'Test Product'},
+    {'title': 'Test Product', 'category': 'invalid_uuid'},
+    {'title': 'Test Product', 'category': '11111111-1111-1111-1111-111111111111'},
+    {'title': 'Test Product', 'category': '11111111-1111-1111-1111-111111111111',
+        'price': 'invalid_price'},
+    {'title': 'Test Product', 'category': '11111111-1111-1111-1111-111111111111', 'price': '19.99', 'parameters': [
+        {'name': '', 'value': ''},
+    ]},
+])
+def test_product_serializer_invalid_data(data):
+    serializer = ProductSerializer(data=data)
+    assert not serializer.is_valid()
+
+
+@pytest.mark.django_db
+def test_product_serializer_valid_data(data, user):
+    data['user'] = user.id  # add user to test data
+    serializer = ProductSerializer(data=data)
+    assert serializer.is_valid()
+
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(

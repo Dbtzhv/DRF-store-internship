@@ -74,26 +74,26 @@ def cart_with_unavailable_items():
 
 
 @pytest.mark.django_db
-def test_make_order_success(cart_with_items):
-    cart_id = cart_with_items.id
-    make_order(cart_with_items)
-    order = OrderModel.objects.first()
-    order_products = OrderProductsModel.objects.filter(order=order)
-    assert order.user == cart_with_items.user
-    assert order.total_price == cart_with_items.items.aggregate(
-        total_price=Sum(F('product__price') * F('quantity')))['total_price']
-    assert order_products.count() == cart_with_items.items.count()
-    for order_item in order_products:
-        cart_item = cart_with_items.items.get(product=order_item.product)
-        assert order_item.quantity == cart_item.quantity
-        assert order_item.product_price == cart_item.product.price
-        assert order_item.order == order
-    assert cart_with_items.status == 'ordered'
-
-
-@pytest.mark.django_db
-def test_make_order_cart_unavailable(cart_with_unavailable_items):
-    with pytest.raises(CartError, match="Корзина содержит товары со статусом 'недоступен'"):
-        make_order(cart_with_unavailable_items)
-    assert OrderModel.objects.count() == 0
-    assert OrderProductsModel.objects.count() == 0
+@pytest.mark.parametrize('cart_model, expected', [(None, True), (None, False)])
+def test_make_order_success(expected, cart_model, cart_with_unavailable_items, cart_with_items):
+    if expected == True:
+        cart_model = cart_with_items
+        make_order(cart_model)
+        order = OrderModel.objects.first()
+        order_products = OrderProductsModel.objects.filter(order=order)
+        assert order.user == cart_model.user
+        assert order.total_price == cart_model.items.aggregate(
+            total_price=Sum(F('product__price') * F('quantity')))['total_price']
+        assert order_products.count() == cart_model.items.count()
+        for order_item in order_products:
+            cart_item = cart_model.items.get(product=order_item.product)
+            assert order_item.quantity == cart_item.quantity
+            assert order_item.product_price == cart_item.product.price
+            assert order_item.order == order
+        assert cart_model.status == 'ordered'
+    else:
+        cart_model = cart_with_unavailable_items
+        with pytest.raises(CartError, match="Корзина содержит товары со статусом 'недоступен'"):
+            make_order(cart_model)
+        assert OrderModel.objects.count() == 0
+        assert OrderProductsModel.objects.count() == 0
