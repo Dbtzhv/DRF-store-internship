@@ -5,6 +5,7 @@ from users.models import UserModel
 from rest_framework import status
 from rest_framework.test import APIClient
 from django.urls import reverse
+from users.services import update_password
 
 
 @pytest.fixture
@@ -90,3 +91,18 @@ def test_registration_api(client):
 
     assert data['email'] == payload['email']
     assert 'access_token' in data
+
+
+# @pytest.mark.django_db
+# @pytest.mark.parametrize("old_password, new_password, expected_status", [
+#     ('testpassword', 'newtestpassword', status.HTTP_200_OK),
+#     ('wrongpassword', 'newtestpassword', status.HTTP_400_BAD_REQUEST),
+#     ('testpassword', '', status.HTTP_400_BAD_REQUEST),
+# ])
+# def test_change_password(client: APIClient, user: UserModel, old_password: str, new_password: str, expected_status: int):
+#     client.force_authenticate(user=user)
+#     response = client.put(reverse('users:change-password'), data={
+#         'old_password': old_password,
+#         'new_password': new_password
+#     }, format='json')
+#     assert response.status_code == expected_status
