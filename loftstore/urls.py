@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from django_rest_passwordreset.views import reset_password_request_token, reset_password_confirm
 # from .yasg import urlpatterns as doc_urls
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
@@ -28,6 +29,8 @@ urlpatterns = [
     path('', include('orders.urls')),
     path('', include('cart.urls')),
     path('', include('transactions.urls'), name='transactions'),
+    path('password_reset/',
+         include('django_rest_passwordreset.urls', namespace='password_reset')),
     # ^ YOUR PATTERNS
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # Optional UI:

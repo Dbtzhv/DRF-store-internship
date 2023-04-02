@@ -454,6 +454,18 @@ djangorestframework = ">=3.9.1"
 base64imagefield = ["Pillow (>=6.2.1)"]
 
 [[package]]
+name = "django-rest-passwordreset"
+version = "1.3.0"
+description = "An extension of django rest framework, providing a configurable password reset strategy"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-rest-passwordreset-1.3.0.tar.gz", hash = "sha256:0d76eb8d0be9636f4404fd35e8a0842c968effeac1d141c55a45aef1ebce54c7"},
+    {file = "django_rest_passwordreset-1.3.0-py3-none-any.whl", hash = "sha256:f888fcb589c46e2f86f9686751de4cc1350c519aa3b120b993b1d675fd96fad6"},
+]
+
+[[package]]
 name = "djangorestframework"
 version = "3.14.0"
 description = "Web APIs for Django, made easy."
@@ -1835,4 +1847,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "a1ce5cb0fc086bcf295a4e75bce76959a6201dc05d0ccac33a11a72295cb9feb"
+content-hash = "e92302c1be16628ef8ca44c7c76b5a8f1baef594940a402962beb013468fc3ee"

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'drf_yasg',
+    'django_rest_passwordreset',
 ]
 
 MIDDLEWARE = [
@@ -207,3 +208,7 @@ SWAGGER_SETTINGS = {
         }
     }
 }
+
+
+# EMAIL BACKEND
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
